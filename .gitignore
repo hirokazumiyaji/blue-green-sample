@@ -1,0 +1,6 @@
+app/vendor/bundle
+app/.bundle
+.vagrant
+*.pyc
+.ruby-version
+.python-version
