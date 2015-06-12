@@ -4,3 +4,4 @@ app/.bundle
 *.pyc
 .ruby-version
 .python-version
+ssh.config
