@@ -4,7 +4,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 from datetime import datetime
 import time
 
-from fabric.api import cd, sudo, run as fabrun, env, settings, abort
+from fabric.api import cd, sudo, run as fabrun, env, settings, abort, hide
 
 env.use_ssh_config = True
 env.ssh_config_path = "ssh.config"
@@ -46,13 +46,14 @@ def prepare():
     if result.succeeded:
         env.current_container_id = result.stdout
 
-    print(env.current_container_id)
-
 
 def _curl(port):
     endpoint = "http://localhost:{}".format(port)
-    return fabrun(
-        "curl -LI {} -o /dev/null -w '%{{http_code}}\n' -s".format(endpoint))
+
+    with hide('running', 'stdout', 'stderr', 'warnings'):
+        return fabrun(
+            "curl -LI {} -o /dev/null -w '%{{http_code}}\n' -s".format(
+                endpoint))
 
 def run():
     server_name = "{}_{}".format(
