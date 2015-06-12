@@ -79,3 +79,11 @@ def ps(run_only="true"):
 
 def images():
     sudo("docker images")
+
+
+def cleancontainer():
+    sudo("docker rm `docker ps -a -q`", warn_only=True)
+
+
+def removeimage():
+    sudo("docker rmi $(docker images | awk '/^<none>/ { print $3 }')", warn_only=True)
