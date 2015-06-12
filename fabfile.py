@@ -2,7 +2,9 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from datetime import datetime
-from fabric.api import cd, sudo, run as fabrun, env
+import time
+
+from fabric.api import cd, sudo, run as fabrun, env, settings, abort
 
 env.use_ssh_config = True
 env.ssh_config_path = "ssh.config"
@@ -47,13 +49,28 @@ def prepare():
     print(env.current_container_id)
 
 
+def _curl(port):
+    endpoint = "http://localhost:{}".format(port)
+    return fabrun(
+        "curl -LI {} -o /dev/null -w '%{{http_code}}\n' -s".format(endpoint))
 
 def run():
     server_name = "{}_{}".format(
         env.next, datetime.now().strftime("%Y%m%d%H%M%S"))
-    sudo(RUN_FORMAT.format(
+    run_result = sudo(RUN_FORMAT.format(
         CONTAINER_PORT[env.next], env.next, server_name
     ))
+
+    with settings(warn_only=True, quiet=True):
+        for i in range(5):
+            result = _curl(CONTAINER_PORT[env.next])
+            if result.stdout == "200":
+                break
+            time.sleep(.5)
+
+    if result.stdout != "200":
+        stop(run_result.stdout)
+        abort("request failed.")
 
 
 def switch():
